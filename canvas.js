@@ -30,6 +30,7 @@ for (let c = 0; c < brickColumnCount; c++) {
 
 document.addEventListener("keydown", keyDownHandler, false); /*  */
 document.addEventListener("keyup", keyupHandler, false);
+document.addEventListener("mousemove", mouseMoveHandler, false);
 
 function keyDownHandler(e) {
   switch (e.key) {
@@ -54,6 +55,13 @@ function keyupHandler(e) {
     case "ArrowLeft":
       leftPressed = false;
       break;
+  }
+}
+
+function mouseMoveHandler(e) {
+  let relativeX = e.clientX - canvas.offsetLeft;
+  if (relativeX > 0 && relativeX < canvas.width) {
+    paddleX = relativeX - paddleWidth / 2;
   }
 }
 
