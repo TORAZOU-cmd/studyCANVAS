@@ -1,5 +1,6 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
+ctx.save();
 
 let x = canvas.width / 2;
 let y = canvas.height - 30;
@@ -9,6 +10,7 @@ const ballRadius = 10;
 const paddleHeight = 10;
 const paddleWidth = 75;
 let paddleX = (canvas.width - paddleWidth) / 2;
+const paddleY = canvas.height - paddleHeight - 10;
 let rightPressed = false;
 let leftPressed = false;
 let score = 0;
@@ -63,6 +65,10 @@ function mouseMoveHandler(e) {
   let relativeX = e.clientX - canvas.offsetLeft;
   if (relativeX > 0 && relativeX < canvas.width) {
     paddleX = relativeX - paddleWidth / 2;
+    if (paddleX < 0) paddleX = 0;
+    if (paddleX > canvas.width - paddleWidth) {
+      paddleX = canvas.width - paddleWidth;
+    }
   }
 }
 
@@ -102,18 +108,39 @@ function drawLives() {
   ctx.fillText("Lives:" + lives, canvas.width - 65, 20);
 }
 
+function drawShadow(color = "black", shadowX = 5, shadowY = 5) {
+  ctx.shadowColor = color;
+  ctx.shadowOffsetX = shadowX;
+  ctx.shadowOffsetY = shadowY;
+  ctx.shadowBlur = 10;
+}
+
 function drawBall() {
   ctx.beginPath();
   ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = "#0095dd";
+  const grad = ctx.createRadialGradient(x, y, ballRadius, x - 5, y - 5, 0);
+  grad.addColorStop(0, "#0095dd");
+  grad.addColorStop(1, "#ddd");
+  ctx.fillStyle = grad;
   ctx.fill();
   ctx.closePath();
 }
 
 function drawPaddle() {
   ctx.beginPath();
-  ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
-  ctx.fillStyle = "#0095dd";
+  ctx.rect(paddleX, paddleY, paddleWidth, paddleHeight);
+  const grad = ctx.createRadialGradient(
+    paddleX + 15,
+    paddleY + 15,
+    75,
+    paddleX + 5,
+    paddleY + 5,
+    0
+  );
+  grad.addColorStop(0, "#0095dd");
+  grad.addColorStop(0.5, "#0095dd");
+  grad.addColorStop(1, "#ddd");
+  ctx.fillStyle = grad;
   ctx.fill();
   ctx.closePath();
 }
@@ -128,7 +155,18 @@ function drawBricks() {
         bricks[c][r].y = brickY;
         ctx.beginPath();
         ctx.rect(brickX, brickY, brickWidth, brickHeight);
-        ctx.fillStyle = "#0095dd";
+        const grad = ctx.createRadialGradient(
+          brickX + 15,
+          brickY + 15,
+          75,
+          brickX + 5,
+          brickY + 5,
+          0
+        );
+        grad.addColorStop(0, "#0095dd");
+        grad.addColorStop(0.5, "#0095dd");
+        grad.addColorStop(1, "#ddd");
+        ctx.fillStyle = grad;
         ctx.fill();
         ctx.closePath();
       }
@@ -140,7 +178,7 @@ function draw() {
   if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
   if (y + dy < ballRadius) {
     dy = -dy;
-  } else if (y + dy > canvas.height - ballRadius) {
+  } else if (y + dy > paddleY - ballRadius + 5) {
     if (x > paddleX && x < paddleX + paddleWidth) {
       dy = -dy;
     } else {
@@ -158,6 +196,7 @@ function draw() {
     }
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawShadow("orange");
   drawBall();
   drawPaddle();
   drawBricks();
