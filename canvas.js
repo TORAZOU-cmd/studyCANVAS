@@ -15,6 +15,7 @@ let rightPressed = false;
 let leftPressed = false;
 let score = 0;
 let lives = 3;
+let gameSet = false;
 
 const brickRowCount = 3;
 const brickColumnCount = 5;
@@ -87,13 +88,15 @@ function collisionDetection() {
           b.status = 0;
           score++;
           if (score == brickRowCount * brickColumnCount) {
-            alert("YOU WIN, CONGRATULATIONS!");
-            document.location.reload();
+            // alert("YOU WIN, CONGRATULATIONS!");
+            resetGame("CONGRATULATIONS!");
+            return true;
           }
         }
       }
     }
   }
+  return false;
 }
 
 function drawScore() {
@@ -174,24 +177,37 @@ function drawBricks() {
   }
 }
 
+function resetGame(text) {
+  ctx.font = "bold 48px monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "midlle";
+  ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
+}
+
 function draw() {
   if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
   if (y + dy < ballRadius) {
     dy = -dy;
   } else if (y + dy > paddleY - ballRadius + 5) {
-    if (x > paddleX && x < paddleX + paddleWidth) {
-      dy = -dy;
-    } else {
-      lives--;
-      if (!lives) {
-        alert("GAME OVER");
-        document.location.reload();
+    if (x > paddleX && x < paddleX + paddleWidth) dy = -Math.abs(dy);
+    if (y + dy > canvas.height - ballRadius) {
+      if (x > paddleX && x < paddleX + paddleWidth) {
+        dy = -dy;
       } else {
-        x = canvas.width / 2;
-        y = canvas.height - 30;
-        dx = 2;
-        dy = -2;
-        paddleX = (canvas.width - paddleWidth) / 2;
+        lives--;
+        if (!lives) {
+          resetGame("GAME OVER");
+          return setTimeout(() => {
+            location.reload();
+            // requestAnimationFrame(draw);
+          }, 3000);
+        } else {
+          x = canvas.width / 2;
+          y = canvas.height - 30;
+          dx = 2;
+          dy = -2;
+          paddleX = (canvas.width - paddleWidth) / 2;
+        }
       }
     }
   }
@@ -200,7 +216,13 @@ function draw() {
   drawBall();
   drawPaddle();
   drawBricks();
-  collisionDetection();
+  gameSet = collisionDetection();
+  if (gameSet) {
+    return setTimeout(() => {
+      location.reload();
+      // requestAnimationFrame(draw);
+    }, 3000);
+  }
   drawScore();
   drawLives();
   x += dx;
